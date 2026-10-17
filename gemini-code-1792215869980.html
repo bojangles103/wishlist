@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ryan's Wishlist</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --border: #e2e8f0;
+      --claimed-bg: #fef2f2;
+      --claimed-border: #fca5a5;
+      --claimed-text: #991b1b;
+      --badge-claimed: #dc2626;
+      --badge-avail: #16a34a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 2rem 1rem 5rem;
+    }
+
+    .container { max-width: 860px; margin: 0 auto; }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; }
+    header p.subtitle {
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Mode Banner */
+    .role-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      color: #0369a1;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+    .role-btn {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .role-btn:hover { background: #0369a1; }
+
+    /* Gift Cards Section */
+    .gift-cards-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .gift-cards-card h2 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .gift-cards-card p { color: var(--muted); font-style: italic; margin-bottom: 1rem; }
+    .card-links { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      background: #f1f5f9;
+      color: #334155;
+      padding: 0.5rem 0.9rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      transition: all 0.15s ease;
+    }
+    .card-link:hover { background: #e2e8f0; color: #0f172a; }
+
+    /* Items List */
+    .item-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      margin-bottom: 1.75rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: border-color 0.2s ease;
+    }
+    @media (max-width: 640px) {
+      .item-card { grid-template-columns: 1fr; }
+    }
+
+    .item-card.is-claimed {
+      border-color: var(--claimed-border);
+      background-color: var(--claimed-bg);
+    }
+
+    .item-image {
+      width: 100%;
+      height: 100%;
+      min-height: 180px;
+      object-fit: cover;
+      background: #f1f5f9;
+    }
+
+    .item-content {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .item-title { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+    .item-price {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #15803d;
+      white-space: nowrap;
+    }
+
+    .item-blurb {
+      font-style: italic;
+      color: #334155;
+      margin-bottom: 1.25rem;
+      font-size: 0.95rem;
+    }
+
+    .item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--border);
+    }
+
+    .buy-link {
+      display: inline-block;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .buy-link:hover { text-decoration: underline; }
+
+    .claim-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .claim-btn:hover { background: var(--accent-hover); }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.3rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .status-badge.claimed {
+      background: #fee2e2;
+      color: var(--badge-claimed);
+      border: 1px solid #fecaca;
+    }
+    .status-badge.unclaim {
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.75rem;
+      border: none;
+      text-decoration: underline;
+      margin-left: 0.5rem;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 50;
+    }
+    .modal {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 100%;
+    }
+    .modal h3 { margin-bottom: 0.75rem; }
+    .modal input {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 0.75rem 0 1.25rem;
+      font-size: 0.95rem;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+    .modal-actions button {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .cancel-btn { background: #f1f5f9; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Wishlist… by Ryan</h1>
+    <p class="subtitle">"This wishlist is organized with the least expensive items at the top. Once you reach a price point that you feel has exceeded your love of me, feel free to scroll up or close the page."</p>
+  </header>
+
+  <!-- Toggle / Role Notification -->
+  <div class="role-banner" id="roleBanner">
+    <div>
+      <strong id="roleLabel">Viewing Mode: Guest / Shopper</strong>
+      <div id="roleDesc" style="font-size:0.8rem; opacity:0.85;">You can mark gifts as purchased so others don't duplicate them.</div>
+    </div>
+    <button class="role-btn" id="toggleRoleBtn" onclick="toggleRole()">Switch to Ryan's View</button>
+  </div>
+
+  <!-- Gift Cards Section -->
+  <section class="gift-cards-card">
+    <h2>Gift Cards</h2>
+    <p>If you’ve decided I’m too hard to shop for, I am always happy to receive gift cards to these places:</p>
+    <div class="card-links">
+      <a class="card-link" href="https://www.bobs-steakandchop.com/steak-house-gift-card" target="_blank">🥩 Bob's Steak & Chop</a>
+      <a class="card-link" href="https://store.steampowered.com/digitalgiftcards/" target="_blank">🎮 Steam Digital Gift Card</a>
+      <a class="card-link" href="https://www.panerabread.com/en-us/gift-cards.html" target="_blank">🥖 Panera Bread</a>
+      <a class="card-link" href="https://www.aesop.com/gift-certificate" target="_blank">🌿 Aēsop</a>
+    </div>
+  </section>
+
+  <!-- Wishlist Items Container -->
+  <div id="itemsContainer"></div>
+</div>
+
+<!-- Claim Modal -->
+<div class="modal-backdrop" id="claimModal">
+  <div class="modal">
+    <h3>Reserve this Gift</h3>
+    <p style="font-size: 0.85rem; color: var(--muted);">Enter your name so other guests know you've claimed this item. Don't worry—Ryan will not be able to see who bought it!</p>
+    <input type="text" id="buyerName" placeholder="Your Name (e.g., Uncle Bob)" />
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="claim-btn" onclick="confirmClaim()">Confirm Claim</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Wishlist data directly extracted from Google Doc
+  const wishlistItems = [
+    {
+      id: "fiskars-pad",
+      title: "Fiskars Garden Kneeling Pad",
+      price: "$7.99",
+      blurb: "There are all kinds of chores that I’ve been putting off because I don’t want to hurt my poor ol’ knees. If you buy two, you can come help me do those chores!",
+      link: "https://www.amazon.com/dp/B0002YTVJA",
+      image: "https://images.thdstatic.com/productImages/50ac35ff-07b8-45e8-a3a5-303985b5b265/svn/fiskars-gardening-tool-accessories-94216974j-e1_600.jpg"
+    },
+    {
+      id: "westcott-ruler",
+      title: "Westcott Aluminum Ruler",
+      price: "$17.09",
+      blurb: "I just feel like I should have a nice ruler. I went back and forth between this and an engineering ruler, and I liked the look of this one. We’ll see if I regret my decision.",
+      link: "https://www.amazon.com/dp/B005IUSCMU",
+      image: "https://m.media-amazon.com/images/I/71V23s0ZgRL._AC_SL1500_.jpg"
+    },
+    {
+      id: "jace-mtg",
+      title: "Jace, the Mind Sculptor MTG Card",
+      price: "$25.00",
+      blurb: "I opened this card while sitting in the parking lot of the comic shop I used to go to back in 2011 and immediately sold it because it was worth over $100. It was such a good card that it was eventually banned from multiple formats. Now, it’s not nearly as good or as expensive and I want my copy back. I only hope that it’ll help fill the 1st edition Charizard-sized hole in my heart.",
+      link: "https://www.tcgplayer.com/product/34384/magic-worldwake-jace-the-mind-sculptor?Language=English&Condition=Near+Mint&page=1",
+      image: "https://tcgplayer-cdn.tcgplayer.com/product/34384_in_1000x1000.jpg"
+    },
+    {
+      id: "warcraft-3",
+      title: "Warcraft III Reforged: Forsaken Kingdom",
+      price: "$29.99",
+      blurb: "This game came out originally in 2002 the summer before sixth grade... Best Buy was running a BOGO deal. Almost 25 years later, they have released an expansion and I have to play it. (Send me a battle.net giftcard or cash and I promise to purchase it!)",
+      link: "https://battle.net",
+      image: "https://blz-contentstack-images.akamaized.net/v3/assets/blt3452e3b114fab0cd/blt56bf3ffb4a622f46/651f1519a5cf0519363fe2e2/W3R_Standard_Edition_Keyart_1920x1080.jpg"
+    },
+    {
+      id: "verge-sub",
+      title: "The Verge Annual Subscription",
+      price: "$40.00",
+      blurb: "There’s a newsletter that’s behind a paywall that I’ve enjoyed reading. With your help, I can get behind that paywall. (You can't gift a subscription directly, but you can send money with the stipulation it's used for this!)",
+      link: "https://www.theverge.com",
+      image: "https://cdn.vox-cdn.com/uploads/chorus_asset/file/24016892/the_verge_social_share_1200x630.png"
+    },
+    {
+      id: "chanel-cream",
+      title: "Chanel La Crème Hand Moisturizer",
+      price: "$62.00",
+      blurb: "If Kim and I ever get a divorce, it will be because I keep picking at the dead skin on my fingers. Help prevent unneeded marital strife with a new hand cream that may or may not solve my problem.",
+      link: "https://www.ulta.com/p/la-creme-main-nourish-soften-illuminate-pimprod2044649",
+      image: "https://media.ulta.com/i/ulta/2529949"
+    },
+    {
+      id: "buck-mason-tee",
+      title: "Buck Mason Field-Spec Cotton Heavy Tee (Tall, Black, XXL)",
+      price: "$62.00",
+      blurb: "I’ve decided to expand my fashion horizons and buy myself a black t-shirt. Or at least wish to one day own a black t-shirt. I’ve heard good things about this t-shirt but I always feel uneasy spending this much money on something so basic.",
+      link: "https://www.buckmason.com/products/black-field-spec-cotton-tall-heavy-tee",
+      image: "https://cdn.shopify.com/s/files/1/0217/4960/products/101-001-001_1.jpg"
+    },
+    {
+      id: "fitbit-air",
+      title: "Google Fitbit Air (Classic Obsidian)",
+      price: "$99.00",
+      blurb: "I’m thinking about replacing my Google Pixel Watch with an analog watch, and this would allow me to keep tracking my health without having an extra watch face. It has the added benefit of having way better battery life.",
+      link: "https://store.google.com/config/google_fitbit_air",
+      image: "https://lh3.googleusercontent.com/fitbit-tracker-placeholder.jpg"
+    },
+    {
+      id: "davek-umbrella",
+      title: "Davek Solo Umbrella (Classic Black)",
+      price: "$115.00",
+      blurb: "My free flimsy purple TCU umbrella that I got from TCU is on its way out. What better way to honor its memory than to replace it with an expensive sturdy black umbrella that lacks school spirit? If you feel obligated to get me something, this will most likely shield Kim from the rain—so it's really a gift for Kim.",
+      link: "https://davekny.com/products/the-davek-solo-2?variant=1070348193",
+      image: "https://davekny.com/cdn/shop/products/davek_solo_classic_black_main.jpg"
+    },
+    {
+      id: "sentrysafe",
+      title: "SentrySafe Waterproof & Fireproof Safe",
+      price: "$247.19",
+      blurb: "Before Riley was born, Kim and I left important documents all over the house... birth certificates in the pantry while social security cards were next to Jake's vet records. We’ve decided to be more careful with Riley’s docs.",
+      link: "https://www.homedepot.com/p/SentrySafe-0-81-cu-ft-Waterproof-and-Fireproof-Safe-for-Home-with-Digital-Keypad-Interior-Light-and-Override-Keys-FPW082HTC/324793141",
+      image: "https://images.thdstatic.com/productImages/5078dbb4-0c1a-4c22-bdf9-0db9d51e7a02/svn/sentrysafe-security-safes-fpw082htc-64_600.jpg"
+    },
+    {
+      id: "topping-dac",
+      title: "Topping DX5 II DAC/AMP (Black)",
+      price: "$299.00",
+      blurb: "This would be replacing an existing DAC/AMP that I have connected to my desktop computer. There’s nothing wrong per se with my existing DAC/AMP, but apparently this DAC/AMP is pretty remarkable for the price. Will I notice a difference? I won’t know until you buy it for me.",
+      link: "https://apos.audio/products/topping-dx5-ii-dac-amp?variant=46529943437548",
+      image: "https://cdn.shopify.com/s/files/1/0081/1572/0250/products/topping-dx5-ii-dac-amp.jpg"
+    },
+    {
+      id: "nanu-clock",
+      title: "Nanu Alarm Clock (Classic Black)",
+      price: "$299.00",
+      blurb: "The design of this clock reminds me of the old Braun clocks, but the alarm is a metal bar that makes a chime rather than an aggressive ring. Is it too expensive? Probably, but it looks nice.",
+      link: "https://wirecutterstore.nytimes.com/products/nanu-arc-alarm-clock",
+      image: "https://nanu.design/cdn/shop/files/Nanu_Arc_Alarm_Clock_Black.jpg"
+    },
+    {
+      id: "ego-vacuum",
+      title: "Ego POWER+ 9 Gallon Wet/Dry Vacuum",
+      price: "$549.00",
+      blurb: "Do you always feel like my car is a pigsty when you get in it? It’s only going to get worse now that I have a baby. With this powerful, battery-powered vacuum, I’ll have everything I need to clean both the inside and outside of my car.",
+      link: "https://egopowerplus.com/wet-dry-vacuum-power-wdv0900/",
+      image: "https://egopowerplus.com/media/catalog/product/w/d/wdv0900_main.jpg"
+    },
+    {
+      id: "louis-poulsen-lamp",
+      title: "Louis Poulsen PH 3/2 Table Lamp (High Lustre Chrome)",
+      price: "$1,690.00",
+      blurb: "Do you feel like we don’t make beautiful things in this country anymore? If you do, this Louis Poulsen lamp won’t assuage you of that opinion because it’s made in Denmark. It is a design icon though, and I would never get rid of it.",
+      link: "https://www.louispoulsen.com/en-us/catalog/private/table/ph-32-table?v=90352-5744901350-03",
+      image: "https://media.fds.fi/product_additional/800/18LPPH_iso_HV.jpg"
+    },
+    {
+      id: "vestaboard",
+      title: "Vestaboard (Black)",
+      price: "$3,499.00",
+      blurb: "Kim and I first saw the Vestaboard while on vacation in Coeur d’Alene. It makes a satisfying click-clacking sound as each individual tile flips through a rolodex of symbols. If you buy us one, we’ll give you the ability to send us whatever message you’d like at any time of the day.",
+      link: "https://shop.vestaboard.com/products/vestaboard",
+      image: "https://shop.vestaboard.com/cdn/shop/products/vestaboard-black.jpg"
+    },
+    {
+      id: "eames-chair",
+      title: "Eames Lounge Chair and Ottoman (Walnut, Black Leather, Tall)",
+      price: "$7,046.25",
+      blurb: "Let me know before you purchase this for me so that I can make space for it.",
+      link: "https://store.hermanmiller.com/living-room-furniture-lounge-chairs-ottomans/eames-lounge-chair-and-ottoman/100711080.html?lang=en_US&sku=100711080",
+      image: "https://www.eamesoffice.com/wp-content/uploads/2021/07/li_elo_p_20110518_055_g-scaled-1.jpg"
+    }
+  ];
+
+  // State Management
+  const urlParams = new URLSearchParams(window.location.search);
+  let isOwner = urlParams.get('role') === 'owner';
+  let activeClaimId = null;
+
+  function getClaims() {
+    return JSON.parse(localStorage.getItem('wishlist_claims') || '{}');
+  }
+
+  function saveClaim(id, name) {
+    const claims = getClaims();
+    claims[id] = { claimedBy: name, date: new Date().toISOString() };
+    localStorage.setItem('wishlist_claims', JSON.stringify(claims));
+    render();
+  }
+
+  function removeClaim(id) {
+    const claims = getClaims();
+    delete claims[id];
+    localStorage.setItem('wishlist_claims', JSON.stringify(claims));
+    render();
+  }
+
+  function toggleRole() {
+    isOwner = !isOwner;
+    const url = new URL(window.location);
+    if (isOwner) {
+      url.searchParams.set('role', 'owner');
+    } else {
+      url.searchParams.delete('role');
+    }
+    window.history.replaceState({}, '', url);
+    render();
+  }
+
+  function render() {
+    const container = document.getElementById('itemsContainer');
+    const roleLabel = document.getElementById('roleLabel');
+    const roleDesc = document.getElementById('roleDesc');
+    const toggleBtn = document.getElementById('toggleRoleBtn');
+
+    if (isOwner) {
+      roleLabel.textContent = "Viewing Mode: Ryan (Owner / Surprise Protected)";
+      roleDesc.textContent = "Reservation statuses and claiming buttons are hidden so your surprises aren't spoiled!";
+      toggleBtn.textContent = "Switch to Shopper View";
+    } else {
+      roleLabel.textContent = "Viewing Mode: Guest / Shopper";
+      roleDesc.textContent = "You can claim gifts so others know they are spoken for (hidden from Ryan).";
+      toggleBtn.textContent = "Switch to Ryan's View";
+    }
+
+    const claims = isOwner ? {} : getClaims();
+
+    container.innerHTML = wishlistItems.map(item => {
+      const claim = claims[item.id];
+      const isClaimed = Boolean(claim);
+
+      let actionHtml = `<a class="buy-link" href="${item.link}" target="_blank">View / Purchase Item &rarr;</a>`;
+
+      if (!isOwner) {
+        if (isClaimed) {
+          actionHtml += `
+            <div>
+              <span class="status-badge claimed">✓ Reserved by ${claim.claimedBy}</span>
+              <button class="status-badge unclaim" onclick="removeClaim('${item.id}')">Undo</button>
+            </div>
+          `;
+        } else {
+          actionHtml += `
+            <button class="claim-btn" onclick="openClaimModal('${item.id}')">I Bought / Reserved This</button>
+          `;
+        }
+      }
+
+      return `
+        <article class="item-card ${isClaimed && !isOwner ? 'is-claimed' : ''}">
+          <img class="item-image" src="${item.image}" alt="${item.title}" onerror="this.src='https://placehold.co/400x300?text=Item+Photo'" />
+          <div class="item-content">
+            <div>
+              <div class="item-header">
+                <h3 class="item-title">${item.title}</h3>
+                <span class="item-price">${item.price}</span>
+              </div>
+              <p class="item-blurb">"${item.blurb}"</p>
+            </div>
+            <div class="item-actions">
+              ${actionHtml}
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function openClaimModal(id) {
+    activeClaimId = id;
+    document.getElementById('buyerName').value = '';
+    document.getElementById('claimModal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    activeClaimId = null;
+    document.getElementById('claimModal').style.display = 'none';
+  }
+
+  function confirmClaim() {
+    const name = document.getElementById('buyerName').value.trim() || 'A generous friend';
+    if (activeClaimId) {
+      saveClaim(activeClaimId, name);
+    }
+    closeModal();
+  }
+
+  // Initialize
+  render();
+</script>
+</body>
+</html>
